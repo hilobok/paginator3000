@@ -1,0 +1,15 @@
+{
+  "name": "paginator3001",
+  "main": "paginator3000.js",
+  "version": "0.0.2",
+  "homepage": "https://github.com/hilobok/paginator3000",
+  "authors": [
+    "Andrew Hilobok <hilobok@gmail.com>"
+  ],
+  "description": "Improved paginator3000",
+  "keywords": [
+    "pager",
+    "pagination"
+  ],
+  "license": "MIT"
+}
