@@ -18,11 +18,12 @@
 	Paginator class
 		paginatorHolderId - id of the html element where paginator will be placed as innerHTML (String): required
 		pagesTotal - number of pages (Number, required)
-		pagesSpan - number of pages which are visible at once (Number, required) 
+		pagesSpan - number of pages which are visible at once (Number, required)
 		pageCurrent - the number of current page (Number, required)
 		baseUrl - the url of the website (String)
 			if baseUrl is 'http://www.yourwebsite.com/pages/' the links on the pages will be:
 			http://www.yourwebsite.com/pages/1, http://www.yourwebsite.com/pages/2,	etc
+			if baseUrl contains {page} then url will be builded replacing it with page number (see paginator3000.html)
 */
 var Paginator = function(paginatorHolderId, pagesTotal, pagesSpan, pageCurrent, baseUrl){
 	if(!document.getElementById(paginatorHolderId) || !pagesTotal || !pagesSpan) return false;
@@ -39,13 +40,13 @@ var Paginator = function(paginatorHolderId, pagesTotal, pagesSpan, pageCurrent, 
 		holder: null,
 
 		table: null,
-		trPages: null, 
+		trPages: null,
 		trScrollBar: null,
 		tdsPages: null,
 
 		scrollBar: null,
 		scrollThumb: null,
-			
+
 		pageCurrentMark: null
 	};
 
@@ -57,7 +58,7 @@ var Paginator = function(paginatorHolderId, pagesTotal, pagesSpan, pageCurrent, 
 	this.initEvents();
 
 	this.scrollToPageCurrent();
-} 
+}
 
 /*
 	Set all .html properties (links to dom objects)
@@ -69,7 +70,7 @@ Paginator.prototype.prepareHtml = function(){
 
 	this.html.table = this.html.holder.getElementsByTagName('table')[0];
 
-	var trPages = this.html.table.getElementsByTagName('tr')[0]; 
+	var trPages = this.html.table.getElementsByTagName('tr')[0];
 	this.html.tdsPages = trPages.getElementsByTagName('td');
 
 	this.html.scrollBar = getElementsByClassName(this.html.table, 'div', 'scroll_bar')[0];
@@ -83,27 +84,27 @@ Paginator.prototype.prepareHtml = function(){
 }
 
 /*
-	Make html for pages (table) 
+	Make html for pages (table)
 */
 Paginator.prototype.makePagesTableHtml = function(){
 	var tdWidth = (100 / this.inputData.pagesSpan) + '%';
 
 	var html = '' +
 	'<table width="100%">' +
-		'<tr>' 
+		'<tr>'
 			for (var i=1; i<=this.inputData.pagesSpan; i++){
 				html += '<td width="' + tdWidth + '"></td>';
 			}
-			html += '' + 
+			html += '' +
 		'</tr>' +
 		'<tr>' +
 			'<td colspan="' + this.inputData.pagesSpan + '">' +
-				'<div class="scroll_bar">' + 
-					'<div class="scroll_trough"></div>' + 
-					'<div class="scroll_thumb">' + 
-						'<div class="scroll_knob"></div>' + 
-					'</div>' + 
-					'<div class="current_page_mark"></div>' + 
+				'<div class="scroll_bar">' +
+					'<div class="scroll_trough"></div>' +
+					'<div class="scroll_thumb">' +
+						'<div class="scroll_knob"></div>' +
+					'</div>' +
+					'<div class="current_page_mark"></div>' +
 				'</div>' +
 			'</td>' +
 		'</tr>' +
@@ -128,7 +129,7 @@ Paginator.prototype.initScrollThumb = function(){
 	this.html.scrollThumb.widthActual;
 
 	this.setScrollThumbWidth();
-	
+
 }
 
 Paginator.prototype.setScrollThumbWidth = function(){
@@ -205,8 +206,8 @@ Paginator.prototype.initEvents = function(){
 			// the first: draw pages, the second: move scrollThumb (it was logically but ie sucks!)
 			_this.moveScrollThumb();
 			_this.drawPages();
-			
-			
+
+
 		}
 		document.onmouseup = function(){
 			document.onmousemove = null;
@@ -218,13 +219,13 @@ Paginator.prototype.initEvents = function(){
 	this.html.scrollBar.onmousedown = function(e){
 		if (!e) var e = window.event;
 		if(matchClass(_this.paginatorBox, 'fullsize')) return;
-		
+
 		_this.html.scrollThumb.xPos = getMousePosition(e).x - getPageX(_this.html.scrollBar) - _this.html.scrollThumb.offsetWidth/2;
-		
+
 		_this.moveScrollThumb();
 		_this.drawPages();
-		
-		
+
+
 	}
 
 	// Comment the row beneath if you set paginator width fixed
@@ -237,7 +238,7 @@ Paginator.prototype.initEvents = function(){
 Paginator.prototype.drawPages = function(){
 	var percentFromLeft = this.html.scrollThumb.xPos/(this.html.table.offsetWidth);
 	var cellFirstValue = Math.round(percentFromLeft * this.inputData.pagesTotal);
-	
+
 	var html = "";
 	// drawing pages control the position of the scrollThumb on the edges!
 	if(cellFirstValue < 1){
@@ -250,17 +251,25 @@ Paginator.prototype.drawPages = function(){
 		this.moveScrollThumb();
 	}
 
-	
+
 
 	for(var i=0; i<this.html.tdsPages.length; i++){
 		var cellCurrentValue = cellFirstValue + i;
 		if(cellCurrentValue == this.inputData.pageCurrent){
 			html = "<span>" + "<strong>" + cellCurrentValue + "</strong>" + "</span>";
 		} else {
-			html = "<span>" + "<a href='" + this.inputData.baseUrl + cellCurrentValue + "'>" + cellCurrentValue + "</a>" + "</span>";
+			html = "<span>" + "<a href='" + this.renderUrl(cellCurrentValue) + "'>" + cellCurrentValue + "</a>" + "</span>";
 		}
 		this.html.tdsPages[i].innerHTML = html;
 	}
+}
+
+Paginator.prototype.renderUrl = function(currentPage) {
+	if (this.inputData.baseUrl.indexOf('{page}') > -1) {
+		return this.inputData.baseUrl.replace('{page}', currentPage);
+	}
+
+	return this.inputData.baseUrl + currentPage;
 }
 
 /*
@@ -269,10 +278,10 @@ Paginator.prototype.drawPages = function(){
 Paginator.prototype.scrollToPageCurrent = function(){
 	this.html.scrollThumb.xPosPageCurrent = (this.inputData.pageCurrent - Math.round(this.inputData.pagesSpan/2))/this.inputData.pagesTotal * this.html.table.offsetWidth;
 	this.html.scrollThumb.xPos = this.html.scrollThumb.xPosPageCurrent;
-	
+
 	this.moveScrollThumb();
 	this.drawPages();
-	
+
 }
 
 
@@ -281,7 +290,7 @@ Paginator.prototype.disableSelection = function(){
 	document.onselectstart = function(){
 		return false;
 	}
-	this.html.scrollThumb.focus();	
+	this.html.scrollThumb.focus();
 }
 
 Paginator.prototype.enableSelection = function(){
@@ -313,13 +322,13 @@ Paginator.resizePaginator = function (paginatorObj){
 function getElementsByClassName(objParentNode, strNodeName, strClassName){
 	var nodes = objParentNode.getElementsByTagName(strNodeName);
 	if(!strClassName){
-		return nodes;	
+		return nodes;
 	}
 	var nodesWithClassName = [];
 	for(var i=0; i<nodes.length; i++){
 		if(matchClass( nodes[i], strClassName )){
 			nodesWithClassName[nodesWithClassName.length] = nodes[i];
-		}	
+		}
 	}
 	return nodesWithClassName;
 }
@@ -389,5 +398,5 @@ function getMousePosition(e) {
 		var posX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 		var posY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 	}
-	return {x:posX, y:posY}	
+	return {x:posX, y:posY}
 }
