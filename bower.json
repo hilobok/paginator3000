@@ -4,6 +4,7 @@
   "version": "0.0.2",
   "homepage": "https://github.com/hilobok/paginator3000",
   "authors": [
+    "Maxim Karaboz",
     "Andrew Hilobok <hilobok@gmail.com>"
   ],
   "description": "Improved paginator3000",
