@@ -39,7 +39,7 @@
 	border: none;
 	background: transparent;
 }
-.paginator tr {
+.paginator table tr {
 	background: transparent;
 }
 .paginator table td {
